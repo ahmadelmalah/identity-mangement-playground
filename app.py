@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, session
+from flask import Flask, redirect, url_for, session, render_template
 from authlib.integrations.flask_client import OAuth
 import os
 from urllib.parse import quote_plus
@@ -9,9 +9,6 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', os.urandom(24))
-# Force localhost instead of 127.0.0.1 for consistent URLs with Cognito
-app.config['SERVER_NAME'] = 'localhost:5000'
-app.config['PREFERRED_URL_SCHEME'] = 'http'
 oauth = OAuth(app)
 
 # Get credentials from environment variables
@@ -26,30 +23,32 @@ oauth.register(
   client_id=COGNITO_CLIENT_ID,
   client_secret=COGNITO_CLIENT_SECRET,
   server_metadata_url=f'https://cognito-idp.{COGNITO_REGION}.amazonaws.com/{COGNITO_USER_POOL_ID}/.well-known/openid-configuration',
-  client_kwargs={'scope': 'email openid phone'}
+  client_kwargs={'scope': 'openid email phone'}
 )
 
 @app.route('/')
 def index():
     user = session.get('user')
-    if user:
-        return  f'Hello, {user["email"]}. <a href="/logout">Logout</a>'
-    else:
-        return f'Welcome! Please <a href="/login">Login</a>.'
+    return render_template('index.html', user=user)
 
 @app.route('/login')
 def login():
-    # Alternate option to redirect to /authorize
-    # redirect_uri = url_for('authorize', _external=True)
-    # return oauth.oidc.authorize_redirect(redirect_uri)
-    return oauth.oidc.authorize_redirect('https://d84l1y8p4kdic.cloudfront.net')
+    redirect_uri = url_for('authorize', _external=True)
+    return oauth.oidc.authorize_redirect(redirect_uri)
 
 @app.route('/authorize')
 def authorize():
     token = oauth.oidc.authorize_access_token()
     user = token['userinfo']
     session['user'] = user
-    return redirect(url_for('index'))
+    return redirect(url_for('profile'))
+
+@app.route('/profile')
+def profile():
+    user = session.get('user')
+    if not user:
+        return redirect(url_for('login'))
+    return render_template('profile.html', user=user)
 
 @app.route('/logout')
 def logout():
@@ -83,4 +82,4 @@ def logout():
     return redirect(cognito_logout_url)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='localhost', debug=True)

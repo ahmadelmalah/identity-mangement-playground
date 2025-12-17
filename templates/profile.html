@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile - Identity Management Playground{% endblock %}
+
+{% block content %}
+    <nav>
+        <a href="{{ url_for('index') }}">← Back to Home</a>
+    </nav>
+    
+    <h1>👤 User Profile</h1>
+    <p class="subtitle">Your account information from AWS Cognito</p>
+    
+    {% if user %}
+        <div class="user-info">
+            {% if user.picture %}
+            <div style="text-align: center;">
+                <img src="{{ user.picture }}" alt="Profile Picture" class="profile-pic">
+            </div>
+            {% endif %}
+            
+            <div class="info-row">
+                <span class="info-label">Display Name:</span>
+                <span class="info-value">{{ user.nickname or user.email.split('@')[0] }}</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">Email:</span>
+                <span class="info-value">{{ user.email }}</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">Email Verified:</span>
+                <span class="info-value">{{ '✅ Yes' if user.email_verified else '❌ No' }}</span>
+            </div>
+            
+            {% if user.phone_number %}
+            <div class="info-row">
+                <span class="info-label">Phone:</span>
+                <span class="info-value">{{ user.phone_number }}</span>
+            </div>
+            {% endif %}
+            
+            {% if user.picture %}
+            <div class="info-row">
+                <span class="info-label">Profile Picture:</span>
+                <span class="info-value">
+                    <a href="{{ user.picture }}" target="_blank" style="color: #667eea;">View Image</a>
+                </span>
+            </div>
+            {% endif %}
+            
+            <div class="info-row">
+                <span class="info-label">User ID (sub):</span>
+                <span class="info-value" style="font-size: 0.85em; word-break: break-all;">{{ user.sub }}</span>
+            </div>
+        </div>
+        
+        <details style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+            <summary style="cursor: pointer; font-weight: 600; color: #667eea; margin-bottom: 10px;">
+                🔍 View All Claims (Raw JWT Data)
+            </summary>
+            <pre style="background: #2d3748; color: #a0aec0; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 0.85em;">{{ user | tojson(indent=2) }}</pre>
+        </details>
+        
+        <div style="margin-top: 30px;">
+            <a href="{{ url_for('index') }}" class="btn">Back to Home</a>
+            <a href="{{ url_for('logout') }}" class="btn btn-secondary" style="margin-left: 10px;">Logout</a>
+        </div>
+    {% else %}
+        <p>No user information available. Please <a href="{{ url_for('login') }}">login</a>.</p>
+    {% endif %}
+{% endblock %}

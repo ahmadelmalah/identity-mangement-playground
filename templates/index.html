@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Identity Management Playground{% endblock %}
+
+{% block content %}
+    <h1>🔐 Identity Management</h1>
+    <p class="subtitle">AWS Cognito OIDC Authentication Demo</p>
+    
+    {% if user %}
+        <div class="welcome-text">
+            👋 Welcome back, <strong>{{ user.nickname or user.email.split('@')[0] }}</strong>!
+        </div>
+        
+        <nav>
+            <a href="{{ url_for('profile') }}">View Profile</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </nav>
+        
+        <div class="user-info">
+            <h3 style="margin-bottom: 15px; color: #333;">Quick Info</h3>
+            <div class="info-row">
+                <span class="info-label">Email:</span>
+                <span class="info-value">{{ user.email }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Status:</span>
+                <span class="info-value">✅ Authenticated</span>
+            </div>
+        </div>
+        
+        <a href="{{ url_for('profile') }}" class="btn">View Full Profile</a>
+        <a href="{{ url_for('logout') }}" class="btn btn-secondary" style="margin-left: 10px;">Logout</a>
+    {% else %}
+        <div class="welcome-text">
+            Welcome! Please login to continue.
+        </div>
+        
+        <p style="color: #666; margin-bottom: 30px;">
+            This demo uses AWS Cognito for secure OIDC authentication.
+        </p>
+        
+        <a href="{{ url_for('login') }}" class="btn">🔑 Login</a>
+    {% endif %}
+{% endblock %}
